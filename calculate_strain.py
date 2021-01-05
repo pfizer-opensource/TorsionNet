@@ -102,15 +102,16 @@ def parse_args():
 
     # Program arguments
     parser.add_argument(
-        "infile", type=str, help="Input file (.sdf) containing one or more molecules."
+        "--in", dest='infile', type=str, help="Input file (.sdf) containing one or more molecules."
     )
     parser.add_argument(
-        "outfile",
+        "--out",
+        dest="outfile",
         type=str,
         help="Output file (.sdf) containing molecules annotated with torsional profiles.",
     )
-    parser.add_argument("model_file", type=str, help="Path to trained TorsionNet model.")
-    parser.add_argument("scaler_file", type=str, help="Path to scaler object used to scale input features to TorsionNet.")
+    parser.add_argument("--model", dest="model_file", type=str, help="Path to trained TorsionNet model.")
+    parser.add_argument("--scaler", dest="scaler_file", type=str, help="Path to scaler object used to scale input features to TorsionNet.")
 
     args = parser.parse_args()
 
@@ -132,7 +133,6 @@ def parse_args():
 
 def generate_torsion_profile(mol_list):
     sf_map = {}
-    avail_profiles = {}
     for graph_mol in mol_list:
         if oechem.OECount(graph_mol, oechem.OEIsRotor()) == 0:
             logging.warning('WARNING: Skipping molecule %s... rotor count is zero', graph_mol.GetTitle())
@@ -159,11 +159,8 @@ def generate_torsion_profile(mol_list):
             specific_inchi = get_specific_dihedral_inchi_key(frag_mol)
 
             if specific_inchi not in sf_map:
-                if specific_inchi not in avail_profiles:
-                    sf_list = get_profile_sf(frag_mol)
-                    sf_map[specific_inchi] = sf_list
-                else:
-                    sf_map[specific_inchi] = []
+                sf_list = get_profile_sf(frag_mol)
+                sf_map[specific_inchi] = sf_list
 
             torsion_data_items = torsion_data[specific_inchi]
             for torsion_data_item in torsion_data_items:
@@ -184,11 +181,6 @@ def generate_torsion_profile(mol_list):
                     tmp_data = bond.GetData(TORSION_ATOMS_FRAGMENT_TAG)
                     tmp_data = tmp_data + ':' + tor_atoms_str
                     bond.SetData(TORSION_ATOMS_FRAGMENT_TAG, tmp_data)
-
-                if specific_inchi in avail_profiles:
-                    bond.SetData(ENERGY_PROFILE_TAG, avail_profiles[specific_inchi][ENERGY_PROFILE_TAG])
-                    bond.SetData(PROFILE_OFFSET_TAG, avail_profiles[specific_inchi][PROFILE_OFFSET_TAG])
-
 
         graph_mol.SetData(HAS_PROFILES_TAG, False)
         for bond in graph_mol.GetBonds(oechem.OEIsRotor()):
