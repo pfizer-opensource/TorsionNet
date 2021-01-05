@@ -1,3 +1,4 @@
 data/TorsionNet500_mm_opt_geometries.sdf filter=lfs diff=lfs merge=lfs -text
 data/TorsionNet500_qm_opt_geometries.sdf filter=lfs diff=lfs merge=lfs -text
 data/TorsionNet500.sdf filter=lfs diff=lfs merge=lfs -text
+data/test_molecules.sdf filter=lfs diff=lfs merge=lfs -text
