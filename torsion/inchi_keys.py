@@ -32,12 +32,15 @@ def get_torsion_oebond(mol, tag="TORSION_ATOMS_FRAGMENT"):
         return None
 
 
-def get_specific_dihedral_inchi_key(mol):
+def get_specific_dihedral_inchi_key(mol, torsion_atoms=None):
     """
     generates unique dihedral inchi key by mutating all four dihedral atoms 
     """
     try:
-        a, b, c, d = get_torsion_oeatom_list(mol)
+        if torsion_atoms and len(torsion_atoms) == 4:
+            a, b, c, d = torsion_atoms[0], torsion_atoms[1], torsion_atoms[2], torsion_atoms[3]
+        else:
+            a, b, c, d = get_torsion_oeatom_list(mol)
         modified_inchi = get_modified_inchi_key(mol, [a, b, c, d])
         inchiKey = oechem.OECreateInChIKey(mol) + modified_inchi
         return inchiKey
@@ -78,3 +81,8 @@ def get_modified_inchi_key(mol, atoms):
 
     return oechem.OECreateInChIKey(copy_mol)
 
+
+def get_modified_molecule_inchi(mol):
+    title = mol.GetTitle().replace(',', '')
+    inchi = oechem.OECreateInChIKey(mol)
+    return inchi + title
